@@ -1,0 +1,162 @@
+import networkx as nx
+import matplotlib.pyplot as plt
+
+NUM_VERTICES = 10
+NUM_SIMULATIONS = 10000 #Number of simulation
+EDGE_PROBABILITY = 0.40 #Probability each edge exists
+
+# Graph generation function
+def generate_random_graph():
+    """
+    Generates a random simple undirected graph with 10 vertices using NetworkX 
+    n = number of vertices
+    p = probability each edge exists
+    """
+    return nx.gnp_random_graph(
+        NUM_VERTICES,
+        EDGE_PROBABILITY
+    )
+
+def is_graph_connected(graph):
+
+    #Checks whether the graph is connected
+    return nx.is_connected(graph)
+
+def has_euler_circuit(graph):
+    #Checks whether graph has an Euler circuit
+    return nx.is_eulerian(graph)
+
+def find_euler_circuit(graph):
+
+    #Finds the Euler circuit and returns list of edges in Euler circuit
+    return list(nx.eulerian_circuit(graph))
+
+def display_graph_edges(graph):
+
+    #Prints all graph edges clearly
+    print("\nSample Graph Edges:")
+
+    edges = list(graph.edges())
+
+    if not edges:
+        print("No edges in graph.")
+        return
+
+    for edge in edges:
+        print(f"  {edge[0]} --- {edge[1]}")
+
+def display_euler_circuit(circuit):
+
+    #Displays Euler circuit clearly
+    print("\nEuler Circuit:")
+
+    path = []
+
+    # Converting edge list into readable path
+    path.append(str(circuit[0][0]))
+
+    for edge in circuit:
+        path.append(str(edge[1]))
+
+    print("  " + " -> ".join(path))
+
+def display_graph_visual(graph):
+
+    #Draws the graph visually.
+    plt.figure(figsize=(6, 6))
+
+    #spring_layout arranges nodes nicely
+    pos = nx.spring_layout(graph, seed=42)
+
+    nx.draw(
+        graph,
+        pos,
+        with_labels=True,
+        node_size=700,
+        font_size=10
+    )
+
+    plt.title("Sample Eulerian Graph")
+    plt.show()
+
+def main():
+    print("-" * 50)
+    print("Euler Circuit Probability Estimator")
+    print("-" * 50)
+    print()
+
+    print("Generating random graphs...")
+    print(f"Vertices per graph:     {NUM_VERTICES}")
+    print(f"Number of simulations:  {NUM_SIMULATIONS}")
+    print(f"Edge probability:       {EDGE_PROBABILITY}")
+    print()
+
+    # Counters
+    connected_graphs = 0
+    euler_graphs = 0
+
+    # Save first Euler graph found
+    sample_graph = None
+    sample_circuit = None
+
+    for x in range(NUM_SIMULATIONS):
+
+        graph = generate_random_graph()
+
+        if is_graph_connected(graph):
+            connected_graphs += 1
+
+            if has_euler_circuit(graph):
+                euler_graphs += 1
+
+
+                #Saves first Eulerian graph found
+                if sample_graph is None:
+                    sample_graph = graph
+                    sample_circuit = find_euler_circuit(graph)
+
+    print("-" * 50)
+    print("Simulation Results")
+    print("-" * 50)
+
+    print(f"Total graphs generated:   {NUM_SIMULATIONS}")
+    print(f"Connected graphs found:   {connected_graphs}")
+    print(f"Eulerian graphs found:    {euler_graphs}")
+
+    # Avoiding division by zero
+    if connected_graphs == 0:
+        print("\nNo connected graphs were found.")
+        print("Try increasing EDGE_PROBABILITY.")
+        return
+
+    probability = euler_graphs / connected_graphs
+
+    print()
+    print("Estimated Probability:")
+    print(
+        f"P(Euler Circuit | Connected) = {probability:.4f}"
+    )
+    print(
+        f"= {probability * 100:.2f}%"
+    )
+
+    if sample_graph is not None:
+        print("\nContains Euler circuit: True")
+        print("Eulerian graph detected.")
+        print("Printing Euler circuit...")
+
+        display_graph_edges(sample_graph)
+        display_euler_circuit(sample_circuit)
+        display_graph_visual(sample_graph)
+
+    else:
+        print("\nContains Euler circuit: False")
+        print("No Euler circuit found in this simulation.")
+
+    print()
+    print("-" * 50)
+    print("Analysis complete")
+    print("-" * 50)
+
+if __name__ == "__main__":
+    main()
